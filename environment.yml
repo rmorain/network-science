@@ -1,14 +1,14 @@
-name: networks
+name: base
 channels:
   - conda-forge
   - defaults
 dependencies:
   - python=3.10
-  - ipython
+  - mamba==1.1.0
+  - conda==22.9.0
+  - pip
+  - scipy
   - ca-certificates
+  - certifi
   - openssl
-  - ipykernel
-  - networkx
-  - numpy
-  - matplotlib
-prefix: /Users/robertmorain/mambaforge/envs/networks
+prefix: /Users/robertmorain/mambaforge
