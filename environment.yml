@@ -11,4 +11,6 @@ dependencies:
   - ca-certificates
   - certifi
   - openssl
+  - pudb
+  - jupyterlab
 prefix: /Users/robertmorain/mambaforge
