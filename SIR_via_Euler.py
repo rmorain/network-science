@@ -29,7 +29,7 @@ def h(s,i,r,beta,gamma,N):
     # From dR/dt equation
     return gamma*i
 
-def SIR_via_Euler(N=1000, beta=.4, gamma=.1, dt=0.1, duration=140):
+def SIR_via_Euler(N=1000, beta=.4, gamma=.1, dt=0.1, duration=140, ax=None):
     #########################################
     # SIR model parameters
     #########################################
@@ -57,13 +57,19 @@ def SIR_via_Euler(N=1000, beta=.4, gamma=.1, dt=0.1, duration=140):
         I.append(i + dt*g(s,i,r,beta,gamma,N))
         R.append(r + dt*h(s,i,r,beta,gamma,N))
         t.append(t[-1]+dt)
-
-    plt.figure(1)
-    plt.plot(t,S,'r',t,I,'g--',t,R,'b:')
-    plt.legend(['S','I','R'])
-    title = 'SIR model via Euler: beta = ' + str(beta) + ', gamma = ' + str(gamma) + ', and R0 = ' + str(beta/gamma)
-    plt.title(title)
-    # plt.waitforbuttonpress()
+        
+    if ax:
+        ax.plot(t,S,'r',t,I,'g--',t,R,'b:')
+        ax.legend(['S','I','R'])
+        title = 'SIR model via Euler: beta = ' + str(beta) + ', gamma = ' + str(gamma) + ', and R0 = ' + str(round(beta/gamma,2))
+        ax.set_title(title)
+    else:
+        plt.figure(1)
+        plt.plot(t,S,'r',t,I,'g--',t,R,'b:')
+        plt.legend(['S','I','R'])
+        title = 'SIR model via Euler: beta = ' + str(beta) + ', gamma = ' + str(gamma) + ', and R0 = ' + str(beta/gamma)
+        plt.title(title)
+        # plt.waitforbuttonpress()
 
     #########################################
     # Repeat using a slightly more sophisticated numerical integration method
