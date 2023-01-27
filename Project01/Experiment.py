@@ -31,6 +31,7 @@ class Experiment:
                 for i in range(len(counts)):
                     self.time_series_data[k][i].append(counts[i])
         self.draw_time_series()
+        self.stats()
 
     def draw_time_series(self):
         data = np.array(self.time_series_data)
@@ -51,6 +52,20 @@ class Experiment:
         plt.legend()
         plt.title(f"SEIR Model for {self.name} {len(self.G)} nodes")
         plt.show()
+
+    def stats(self):
+        data = np.array(self.time_series_data).mean(axis=0)
+        # Time to peak
+        time_to_peak = data[1].argmax()
+        print(f"Time to peak: {time_to_peak}")
+        # Peak infections
+        peak_infections = data[1].max()
+        print(f"Peak infections: {peak_infections}")
+        # Time until no new infections
+        min_sus = data[0].min()
+        no_new_infections = np.where(data[0] == min_sus)[0][0]
+        print(f"Time to no new infections: {no_new_infections}")
+        print(f"Unaffected individuals: {min_sus}")
 
 
 if __name__ == "__main__":
