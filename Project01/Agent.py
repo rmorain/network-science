@@ -24,10 +24,13 @@ class Agent:
         self.d_e = np.ceil(
             np.random.lognormal(mean=self.m_e, sigma=self.s_e)
         )  # How long the agent stays in the exposed stage
+        
         self.countdown_to_infectious = self.d_e
+        
         self.d_i = np.ceil(
             np.random.lognormal(mean=self.m_i, sigma=self.s_i)
         )  # How long the agent stays in the infectious stage
+        
         self.countdown_to_recovered = self.d_i
 
     def setState(self, state):
