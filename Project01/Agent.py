@@ -37,7 +37,6 @@ class Agent:
         return self.state
 
     def step(self):
-        __import__("pudb").set_trace()
         if self.state == State.SUSCEPTIBLE:
             self.do_susceptible()
         elif self.state == State.EXPOSED:
