@@ -1,6 +1,5 @@
 import unittest
 
-import networkx as nx
 from Agent import Agent
 
 
