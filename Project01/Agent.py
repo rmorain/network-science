@@ -1,6 +1,6 @@
 import numpy as np
 import random
-import State
+from State import State
 
 class Agent():
 
