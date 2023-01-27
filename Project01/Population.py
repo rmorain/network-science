@@ -26,6 +26,7 @@ class Population:
             exposed_infectious[i].state = State.EXPOSED
         for i in range(len(exposed_infectious) // 2, len(exposed_infectious)):
             exposed_infectious[i].state = State.INFECTED
+        self.counts = self.count_all()
 
     def count_all(self):
         susceptible = 0
@@ -46,3 +47,4 @@ class Population:
     def step_all(self):
         for agent in self.population:
             agent.step()
+        self.counts = self.count_all()
