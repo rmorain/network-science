@@ -49,7 +49,7 @@ class Agent:
     def do_susceptible(self):
         for neighbor in self.neighbors:
             if neighbor.state == State.INFECTED:
-                if Agent.calc_success(neighbor.pInfectionTransmission()):
+                if self.calc_success(neighbor.pInfectionTransmission()):
                     self.setState(State.EXPOSED)
                     return
 
@@ -72,6 +72,5 @@ class Agent:
         b = a * np.exp(self.B * (self.days_spent_infectious**3 - 1))
         return b / (1 + b)
 
-    @classmethod
-    def calc_success(probability):
+    def calc_success(self, probability):
         return random.random() < probability
