@@ -9,8 +9,15 @@ class Population:
         N = len(G.nodes)
         self.population = []
         for i in range(N):
-            neighbors = G[i]
+            neighbors = [n for n in G[i]]
             self.population.append(Agent(i, neighbors))
+        for i in range(N):
+            # Assign neighbors to Agent objects
+            A = self.population[i]
+            neighbors = A.neighbors
+            for j in range(len(neighbors)):
+                neighbors[j] = self.population[neighbors[j]]
+
         # Set 5% of the population to exposed and 5% to infectious
         exposed_infectious = np.random.choice(
             self.population, size=int(N * 0.1), replace=False
