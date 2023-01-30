@@ -1,3 +1,5 @@
+import collections
+
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
@@ -6,32 +8,37 @@ from Population import Population
 
 
 class Experiment:
-    def __init__(self, G, name):
+    def __init__(self, G, steps, trials, name):
         self.G = G
         self.name = name
         self.P = Population(self.G)
         self.counts = self.P.count_all()
-        self.steps = 100
-        self.trials = 5
+        self.steps = steps
+        self.trials = trials
         self.time_series_data = [
             [
-                [self.P.counts[0]],
-                [self.P.counts[1]],
-                [self.P.counts[2]],
-                [self.P.counts[3]],
+                [],
+                [],
+                [],
+                [],
             ]
             for k in range(self.trials)
         ]
 
     def run(self):
         for k in range(self.trials):
+            counts = self.P.counts
+            for i in range(len(counts)):
+                self.time_series_data[k][i].append(counts[i])
             for i in range(self.steps):
                 self.P.step_all()
                 counts = self.P.counts
-                for i in range(len(counts)):
-                    self.time_series_data[k][i].append(counts[i])
+                for j in range(len(counts)):
+                    self.time_series_data[k][j].append(counts[j])
+            self.P = Population(self.G)  # Reinitialize population
         self.draw_time_series()
         self.stats()
+        self.network_conditions()
 
     def draw_time_series(self):
         data = np.array(self.time_series_data)
@@ -67,8 +74,46 @@ class Experiment:
         print(f"Time to no new infections: {no_new_infections}")
         print(f"Unaffected individuals: {min_sus}")
 
+    def network_conditions(self):
+        # Degree distribution
+        deg, cnt = self.plot_degree_histogram(self.G, log_scale=False)
+        # max degree
+        print(f"Max degree: {max(cnt)}")
+        # avg degree
+        print(f"Avg degree: {np.mean(cnt)}")
+        # Diameter
+        print(f"Diameter: {nx.diameter(self.G)}")
+        # Radius
+        print(f"Radius: {nx.radius(self.G)}")
+        # Density
+        print(f"Density: {nx.density(self.G)}")
+
+    def plot_degree_histogram(self, G, log_scale=False):
+        degree_sequence = sorted(
+            [d for n, d in G.degree()], reverse=True
+        )  # degree sequence
+        # print "Degree sequence", degree_sequence
+        degreeCount = collections.Counter(degree_sequence)
+        deg, cnt = zip(*degreeCount.items())
+
+        fig, ax = plt.subplots()
+        plt.bar(deg, cnt, width=0.80, color="b")
+
+        plt.title(f"Degree Histogram of {self.name}")
+        plt.ylabel("Count")
+        plt.xlabel("Degree")
+        ax.set_xticks([d + 0.4 for d in deg])
+        ax.set_xticklabels(deg)
+        if log_scale:
+            plt.xscale("log")
+            plt.yscale("log")
+            ax.set_aspect("equal", "box")
+
+        plt.show()
+        return deg, cnt
+
 
 if __name__ == "__main__":
-    G = nx.complete_graph(100)
-    E = Experiment(G, "complete graph")
+    G = nx.barabasi_albert_graph(100, 2)
+    E = Experiment(G, 100, 5, "complete graph")
     E.run()
