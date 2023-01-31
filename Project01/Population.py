@@ -1,3 +1,4 @@
+import networkx as nx
 import numpy as np
 
 from Agent import Agent
@@ -8,15 +9,20 @@ class Population:
     def __init__(self, G):
         N = len(G.nodes)
         self.population = []
-        for i in range(N):
-            neighbors = [n for n in G[i]]
+        for i, node in enumerate(G.nodes):
+            neighbors = [n for n in nx.all_neighbors(G, node)]
             self.population.append(Agent(i, neighbors))
         for i in range(N):
             # Assign neighbors to Agent objects
             A = self.population[i]
             neighbors = A.neighbors
             for j in range(len(neighbors)):
-                neighbors[j] = self.population[neighbors[j]]
+                a = neighbors[j]
+                if type(a) is int:
+                    neighbors[j] = self.population[neighbors[j] - 1]
+                else:
+                    # Lattice neighbors
+                    neighbors[j] = self.population[10 * a[0] + a[1]]
 
         # Set 5% of the population to exposed and 5% to infectious
         exposed_infectious = np.random.choice(

@@ -63,10 +63,10 @@ class Experiment:
     def stats(self):
         data = np.array(self.time_series_data).mean(axis=0)
         # Time to peak
-        time_to_peak = data[1].argmax()
+        time_to_peak = data[2].argmax()
         print(f"Time to peak: {time_to_peak}")
         # Peak infections
-        peak_infections = data[1].max()
+        peak_infections = data[2].max()
         print(f"Peak infections: {peak_infections}")
         # Time until no new infections
         min_sus = data[0].min()
