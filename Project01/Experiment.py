@@ -30,15 +30,40 @@ class Experiment:
             counts = self.P.counts
             for i in range(len(counts)):
                 self.time_series_data[k][i].append(counts[i])
+            
+            self.animateGraph(False)
+
             for i in range(self.steps):
                 self.P.step_all()
+
+                self.animateGraph(True)
+
                 counts = self.P.counts
                 for j in range(len(counts)):
                     self.time_series_data[k][j].append(counts[j])
-            self.P = Population(self.G)  # Reinitialize population
+            # self.P = Population(self.G)  Reinitialize population
         self.draw_time_series()
         self.stats()
         self.network_conditions()
+
+    def animateGraph(self, draw_only_nodes):
+        plt.clf()
+        plt.figure(1)
+        plt.ion()
+        node_color = [agent.state for agent in self.P.population]
+
+        if draw_only_nodes:
+            animate = nx.draw_networkx_nodes
+        else:
+            animate = nx.draw
+
+        animate(
+            self.G,
+            pos=nx.nx_agraph.graphviz_layout(self.G, prog="neato"),
+            node_size=15,
+            node_color=node_color
+        )
+        plt.waitforbuttonpress(0.1)
 
     def draw_time_series(self):
         data = np.array(self.time_series_data)
