@@ -10,6 +10,9 @@ from Population import Population
 class Experiment:
     def __init__(self, G, steps, trials, name):
         self.G = G
+        mapping = {n:i for (n,i) in zip(self.G.nodes(),range(1,len(self.G.nodes())+1))}
+        nx.relabel_nodes(self.G,mapping,False)
+
         self.name = name
         self.P = Population(self.G)
         self.counts = self.P.count_all()
@@ -57,7 +60,7 @@ class Experiment:
         else:
             animate = nx.draw
 
-        animate(
+        animate (
             self.G,
             pos=nx.nx_agraph.graphviz_layout(self.G, prog="neato"),
             node_size=15,
