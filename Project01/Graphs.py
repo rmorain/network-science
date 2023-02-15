@@ -1,7 +1,7 @@
 import networkx as nx
 import Experiment
 
-def read_graph_from_file(filename="ia-infect-dublin/ia-infect-dublin.mtx"):
+def read_graph_from_file(filename="Project01/ia-infect-dublin/ia-infect-dublin.mtx"):
         fo = open(filename,"r")
         line = fo.readline() # Read file header
         line = fo.readline() # Number of vertices and edges
