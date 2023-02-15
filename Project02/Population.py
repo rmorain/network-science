@@ -22,17 +22,19 @@ class Population:
                     # Lattice neighbors
                     neighbors[j] = self.population[10 * a[0] + a[1]]
 
+        for node_id in early_adopters:
+            # Change agent state
+            self.population[node_id].state = State.A
+
         self.counts = self.count_all()
 
     def count_all(self):
-        A = 0
-        B = 0
-        for a in self.population:
-            if a.state == State.A:
-                A += 1
-            elif a.state == State.B:
-                B += 1
-        return A, B
+        counts = {}
+        for state in State:
+            counts[state] = 0
+        for agent in self.population:
+            counts[agent.state] += 1
+        return counts
 
     def step_all(self):
         for agent in self.population:
