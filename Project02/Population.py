@@ -7,10 +7,9 @@ from State import State
 class Population:
     def __init__(self, G, early_adopters):
         self.population = {}
-        for i, node in enumerate(G.nodes):
-            agent_id = node.id
-            neighbors = [n.id for n in nx.all_neighbors(G, node)]
-            self.population[agent_id] = Agent(agent_id, neighbors)
+        for node in G.nodes:
+            neighbors = [n for n in nx.all_neighbors(G, node)]
+            self.population[node] = Agent(node, neighbors)
         for agent in self.population.values():
             # Assign neighbors to Agent objects
             neighbors = agent.neighbors
@@ -22,9 +21,9 @@ class Population:
                     # Lattice neighbors
                     neighbors[j] = self.population[10 * a[0] + a[1]]
 
-        for node_id in early_adopters:
+        for node in early_adopters:
             # Change agent state
-            self.population[node_id].state = State.A
+            self.population[node].state = State.A
 
         self.counts = self.count_all()
 
