@@ -8,20 +8,21 @@ from Population import Population
 
 
 class Experiment:
-    def __init__(self, G, steps, trials, name):
+    def __init__(self, G, steps, trials, name, early_adopters):
         self.G = G
-        mapping = {n:i for (n,i) in zip(self.G.nodes(),range(1,len(self.G.nodes())+1))}
-        nx.relabel_nodes(self.G,mapping,False)
+        mapping = {
+            n: i for (n, i) in zip(self.G.nodes(), range(1, len(self.G.nodes()) + 1))
+        }
+        nx.relabel_nodes(self.G, mapping, False)
 
         self.name = name
-        self.P = Population(self.G)
+        self.early_adopters = early_adopters
+        self.P = Population(self.G, early_adopters)
         self.counts = self.P.count_all()
         self.steps = steps
         self.trials = trials
         self.time_series_data = [
             [
-                [],
-                [],
                 [],
                 [],
             ]
@@ -31,9 +32,9 @@ class Experiment:
     def run(self):
         for k in range(self.trials):
             counts = self.P.counts
-            for i in range(len(counts)):
-                self.time_series_data[k][i].append(counts[i])
-            
+            for i, v in enumerate(self.P.counts.values()):
+                self.time_series_data[k][i].append(v)
+
             self.animateGraph(False)
 
             for i in range(self.steps):
@@ -44,27 +45,28 @@ class Experiment:
                 counts = self.P.counts
                 for j in range(len(counts)):
                     self.time_series_data[k][j].append(counts[j])
-            # self.P = Population(self.G)  Reinitialize population
+            self.P = Population(self.G, self.early_adopters)
         self.draw_time_series()
         self.stats()
         self.network_conditions()
 
     def animateGraph(self, draw_only_nodes):
+        __import__("pudb").set_trace()
         plt.clf()
         plt.figure(1)
         plt.ion()
-        node_color = [agent.state for agent in self.P.population]
+        node_color = [agent.current_state.value for agent in self.P.population.values()]
 
         if draw_only_nodes:
             animate = nx.draw_networkx_nodes
         else:
             animate = nx.draw
 
-        animate (
+        animate(
             self.G,
             pos=nx.nx_agraph.graphviz_layout(self.G, prog="neato"),
             node_size=15,
-            node_color=node_color
+            node_color=node_color,
         )
         plt.waitforbuttonpress(0.1)
 
