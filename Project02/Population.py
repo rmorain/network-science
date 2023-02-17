@@ -23,7 +23,7 @@ class Population:
 
         for node in early_adopters:
             # Change agent state
-            self.population[node].state = State.A
+            self.population[node].current_state = State.STATE_A
 
         self.counts = self.count_all()
 
@@ -31,8 +31,8 @@ class Population:
         counts = {}
         for state in State:
             counts[state] = 0
-        for agent in self.population:
-            counts[agent.state] += 1
+        for agent in self.population.values():
+            counts[agent.current_state] += 1
         return counts
 
     def step_all(self):
