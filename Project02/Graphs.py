@@ -65,6 +65,19 @@ def _get_graph_nineteenfour_from_NCM_book():
     G.add_edges_from([(13, 14), (13, 16), (13, 17), (14, 17), (15, 16), (16, 17)])
     return G
 
+def get_nHighestDegreeNodes(G,n):
+    degrees = list(G.degree(list(G.nodes)))
+    degrees.sort(key = lambda x: x[1], reverse=True)
+
+    return [degrees[i][0] for i in range(n)]
+
+def get_nLowestDegreeNodes(G,n):
+    degrees = list(G.degree(list(G.nodes)))
+    degrees.sort(key = lambda x: x[1])
+
+    return [degrees[i][0] for i in range(n)]
+
+
 
 # Graph from fig 19.4
 NCM_Graph = _get_graph_nineteenfour_from_NCM_book()
@@ -92,11 +105,11 @@ Graphs = {
     "circulantGraph_2x" : [[1,2],[1,10]],
     "circulantGraph_4x" : [[1,2],[1,2,3,4]],
     "karateGraph" : [[1,2],[33,34]],
-    "BAGraph_100",
-    "BAGraph_410",
-    "smallWorldGraph_100",
-    "smallWorldGraph_410",
-    "dublinGraph",
+    "BAGraph_100" : [(get_nLowestDegreeNodes,4),(get_nHighestDegreeNodes,4)],
+    "BAGraph_410" : [(get_nHighestDegreeNodes,20),(get_nHighestDegreeNodes,50)],
+    "smallWorldGraph_100" : [(get_nLowestDegreeNodes,4),(get_nHighestDegreeNodes,4)],
+    "smallWorldGraph_410" : [(get_nHighestDegreeNodes,20)],
+    "dublinGraph" : [(get_nHighestDegreeNodes,50)]
 }
 steps = 100
 trials = 10
@@ -108,5 +121,8 @@ for graphName in Graphs.keys():
         }
     nx.relabel_nodes(G, mapping, False)
 
-    E = Experiment(eval(G), steps, trials, graphName)
-    E.run()
+    for earlyAdopters in Graphs[graphName]:
+        if not isinstance(earlyAdopters, list):
+            earlyAdopters = earlyAdopters[0](G, earlyAdopters[1])
+        E = Experiment(G, steps, trials, graphName, earlyAdopters)
+        E.run()
