@@ -103,6 +103,10 @@ trials = 10
 
 for graphName in Graphs.keys():
     G = eval(graphName)
-    
+    mapping = {
+            n: i for (n, i) in zip(G.nodes(), range(1, len(G.nodes()) + 1))
+        }
+    nx.relabel_nodes(G, mapping, False)
+
     E = Experiment(eval(G), steps, trials, graphName)
     E.run()
