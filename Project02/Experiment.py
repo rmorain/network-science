@@ -26,7 +26,6 @@ class Experiment:
 
     def run(self):
         for k in range(self.trials):
-            counts = self.P.counts
             for i, v in enumerate(self.P.counts.values()):
                 self.time_series_data[k][i].append(v)
 
@@ -37,16 +36,14 @@ class Experiment:
 
                 self.animateGraph(True)
 
-                counts = self.P.counts
-                for j in range(len(counts)):
-                    self.time_series_data[k][j].append(counts[j])
+                for j, v in enumerate(self.P.counts.values()):
+                    self.time_series_data[k][j].append(v)
             self.P = Population(self.G, self.early_adopters)
         self.draw_time_series()
         self.stats()
         self.network_conditions()
 
     def animateGraph(self, draw_only_nodes):
-        __import__("pudb").set_trace()
         plt.clf()
         plt.figure(1)
         plt.ion()

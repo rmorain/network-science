@@ -36,6 +36,6 @@ class Population:
         return counts
 
     def step_all(self):
-        for agent in self.population:
+        for agent in self.population.values():
             agent.step()
         self.counts = self.count_all()
