@@ -10,7 +10,6 @@ class TestPopulation(unittest.TestCase):
     def setUp(self):
         self.early_adopters = [1, 2]
         self.G = NCM_Graph
-        __import__("pudb").set_trace()
         self.P = Population(self.G, self.early_adopters)
 
     def test_population_init(self):

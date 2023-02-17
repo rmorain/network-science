@@ -1,6 +1,6 @@
 import networkx as nx
 
-import Experiment
+from Experiment import Experiment
 
 
 def read_graph_from_file(filename="ia-infect-dublin/ia-infect-dublin.mtx"):
@@ -99,9 +99,9 @@ Graphs = [
     "dublinGraph",
 ]
 
-# steps = 100
-# trials = 10
+steps = 100
+trials = 10
 
-# for G in Graphs:
-# E = Experiment(eval(G), steps, trials, G)
-# E.run()
+for G in Graphs:
+    E = Experiment(eval(G), steps, trials, G)
+    E.run()
