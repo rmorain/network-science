@@ -87,21 +87,26 @@ smallWorldGraph_410 = nx.watts_strogatz_graph(410, 3, 0.3)
 
 dublinGraph = read_graph_from_file()
 
-Graphs = [
-    "NCM_Graph",
-    "circulantGraph_2x",
-    "circulantGraph_4x",
-    "karateGraph",
+Graphs = {
+    "NCM_Graph" : [[1,2],[7,8],[6,7,12]],
+    "circulantGraph_2x" : [[1,2],[1,10]],
+    "circulantGraph_4x" : [[1,2],[1,2,3,4]],
+    "karateGraph" : [[1,2],[33,34]],
     "BAGraph_100",
     "BAGraph_410",
     "smallWorldGraph_100",
     "smallWorldGraph_410",
     "dublinGraph",
-]
-
+}
 steps = 100
 trials = 10
 
-for G in Graphs:
-    E = Experiment(eval(G), steps, trials, G)
+for graphName in Graphs.keys():
+    G = eval(graphName)
+    mapping = {
+            n: i for (n, i) in zip(G.nodes(), range(1, len(G.nodes()) + 1))
+        }
+    nx.relabel_nodes(G, mapping, False)
+
+    E = Experiment(eval(G), steps, trials, graphName)
     E.run()

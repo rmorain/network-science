@@ -10,11 +10,6 @@ from Population import Population
 class Experiment:
     def __init__(self, G, steps, trials, name, early_adopters):
         self.G = G
-        mapping = {
-            n: i for (n, i) in zip(self.G.nodes(), range(1, len(self.G.nodes()) + 1))
-        }
-        nx.relabel_nodes(self.G, mapping, False)
-
         self.name = name
         self.early_adopters = early_adopters
         self.P = Population(self.G, early_adopters)
