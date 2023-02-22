@@ -15,6 +15,10 @@ class Experiment:
         self.P = Population(self.G, early_adopters)
         self.counts = self.P.count_all()
         self.steps = steps
+        if len(self.G) < 100:
+            self.draw = True
+        else:
+            self.draw = False
         self.trials = trials
         self.time_series_data = [
             [
@@ -29,21 +33,22 @@ class Experiment:
             for i, v in enumerate(self.P.counts.values()):
                 self.time_series_data[k][i].append(v)
 
-            self.animateGraph(False)
+            if self.draw:
+                self.animateGraph(False, 0)
 
             for i in range(self.steps):
                 self.P.step_all()
 
-                self.animateGraph(True)
+                if self.draw:
+                    self.animateGraph(False, i + 1)
 
                 for j, v in enumerate(self.P.counts.values()):
                     self.time_series_data[k][j].append(v)
             self.P = Population(self.G, self.early_adopters)
         self.draw_time_series()
-        self.stats()
-        self.network_conditions()
+        return self.stats()
 
-    def animateGraph(self, draw_only_nodes):
+    def animateGraph(self, draw_only_nodes, step):
         plt.clf()
         plt.figure(1)
         plt.ion()
@@ -60,55 +65,39 @@ class Experiment:
             node_size=15,
             node_color=node_color,
         )
+        plt.savefig(f"figures/{self.name}/{step}.png")
         plt.waitforbuttonpress(0.1)
 
     def draw_time_series(self):
+        fig = plt.figure(self.name)
         data = np.array(self.time_series_data)
         mean_data = data.mean(axis=0)
         Q1 = np.quantile(data, 0.25, axis=0)
         Q3 = np.quantile(data, 0.75, axis=0)
         x = list(range(self.steps + 1))
-        plt.plot(x, mean_data[0], label="S")
-        plt.plot(x, mean_data[1], label="E")
-        plt.plot(x, mean_data[2], label="I")
-        plt.plot(x, mean_data[3], label="R")
+        plt.plot(x, mean_data[0], label="Behavior A")
         plt.fill_between(x, Q1[0], Q3[0], alpha=0.3)
-        plt.fill_between(x, Q1[1], Q3[1], alpha=0.3)
-        plt.fill_between(x, Q1[2], Q3[2], alpha=0.3)
-        plt.fill_between(x, Q1[3], Q3[3], alpha=0.3)
         plt.xlabel("Timestep")
         plt.ylabel("# of individuals")
         plt.legend()
-        plt.title(f"SEIR Model for {self.name} {len(self.G)} nodes")
-        plt.show()
+        plt.title(f"Complex contagion model for {self.name} {len(self.G)} nodes")
+        plt.savefig(f"figures/{self.name}/timeseries.png")
 
     def stats(self):
         data = np.array(self.time_series_data).mean(axis=0)
-        # Time to peak
-        time_to_peak = data[2].argmax()
-        print(f"Time to peak: {time_to_peak}")
-        # Peak infections
-        peak_infections = data[2].max()
-        print(f"Peak infections: {peak_infections}")
-        # Time until no new infections
+        stats = {}
+        # Time to no changes
         min_sus = data[0].min()
-        no_new_infections = np.where(data[0] == min_sus)[0][0]
-        print(f"Time to no new infections: {no_new_infections}")
-        print(f"Unaffected individuals: {min_sus}")
-
-    def network_conditions(self):
-        # Degree distribution
-        deg, cnt = self.plot_degree_histogram(self.G, log_scale=False)
-        # max degree
-        print(f"Max degree: {max(cnt)}")
-        # avg degree
-        print(f"Avg degree: {np.mean(cnt)}")
-        # Diameter
-        print(f"Diameter: {nx.diameter(self.G)}")
-        # Radius
-        print(f"Radius: {nx.radius(self.G)}")
+        stats["time_to_no_change"] = np.where(data[0] == min_sus)[0][0]
+        # Percentage adopting
+        stats["percentage_adopting"] = data[0][-1] / len(self.G)
+        # Clustering coeffiecient
+        stats["clustering_coefficient"] = nx.transitivity(self.G)
         # Density
-        print(f"Density: {nx.density(self.G)}")
+        stats["density"] = nx.density(self.G)
+        # Average path length
+        stats["avg_path_len"] = nx.average_shortest_path_length(self.G)
+        return stats
 
     def plot_degree_histogram(self, G, log_scale=False):
         degree_sequence = sorted(
