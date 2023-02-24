@@ -5,33 +5,38 @@ import networkx as nx
 import numpy as np
 
 from Population import Population
+from Project02.State import State
 
 
 class Experiment:
-    def __init__(self, G, steps, trials, name, early_adopters):
-        self.G = G
+    def __init__(self, graphGenerator, steps, trials, name, early_adopters):
+        self.graphGenerator = graphGenerator
         self.name = name
         self.early_adopters = early_adopters
-        self.P = Population(self.G, early_adopters)
-        self.counts = self.P.count_all()
+        
         self.steps = steps
         if len(self.G) < 100:
             self.draw = True
         else:
             self.draw = False
         self.trials = trials
-        self.time_series_data = [
-            [
-                [],
-                [],
-            ]
-            for k in range(self.trials)
-        ]
+        self.time_series_data = []
 
     def run(self):
         for k in range(self.trials):
-            for i, v in enumerate(self.P.counts.values()):
-                self.time_series_data[k][i].append(v)
+            G = self.graphGenerator()
+            mapping = {
+                n: i for (n, i) in zip(G.nodes(), range(1, len(G.nodes()) + 1))
+            }
+            nx.relabel_nodes(G, mapping, False)
+
+            if not isinstance(self.earlyAdopters, list):
+                self.earlyAdopters = self.earlyAdopters[0](G, self.earlyAdopters[1])
+
+            self.P = Population(G, self.early_adopters)
+            self.counts = self.P.count_all()
+
+            self.time_series_data.append(self.counts[State.STATE_A])
 
             if self.draw and k == 0:
                 self.animateGraph(False, 0)
