@@ -82,7 +82,7 @@ if __name__ == "__main__":
         return [degrees[i][0] for i in range(n)]
 
     # Graph from fig 19.4
-    def NCM_graph():
+    def NCM_Graph():
         return _get_graph_nineteenfour_from_NCM_book()
 
     # circulant graph with 2 neighbors each side
