@@ -2,6 +2,7 @@ import unittest
 
 import networkx as nx
 from Experiment import Experiment
+from Graphs import _get_graph_nineteenfour_from_NCM_book
 
 
 class TestExperiment(unittest.TestCase):
@@ -20,6 +21,22 @@ class TestExperiment(unittest.TestCase):
         }
         result = self.E.run()
         self.assertEqual(result, expected_result)
+
+    def test_ncm_graph(self):
+        G = _get_graph_nineteenfour_from_NCM_book()
+        E = Experiment(G, 10, 1, "Test", [7, 8])
+        result = E.run()
+        self.assertIsNotNone(result)
+
+    def test_small_world(self):
+        G = nx.watts_strogatz_graph(100, 5, 0.3)
+        E = Experiment(G, 10, 1, "Test", [7, 8])
+        result = E.run()
+        self.assertIsNotNone(result)
+
+    def test_connected(self):
+        smallWorldGraph_410 = nx.watts_strogatz_graph(410, 3, 0.1)
+        assert nx.is_connected(smallWorldGraph_410)
 
 
 if __name__ == "__main__":

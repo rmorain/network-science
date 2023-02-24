@@ -5,7 +5,7 @@ import networkx as nx
 import numpy as np
 
 from Population import Population
-from Project02.State import State
+from State import State
 
 
 class Experiment:
@@ -13,43 +13,43 @@ class Experiment:
         self.graphGenerator = graphGenerator
         self.name = name
         self.early_adopters = early_adopters
-        
+
         self.steps = steps
-        if len(self.G) < 100:
-            self.draw = True
-        else:
-            self.draw = False
         self.trials = trials
-        self.time_series_data = []
+        self.time_series_data = [[] for k in range(self.trials)]
 
     def run(self):
         for k in range(self.trials):
-            G = self.graphGenerator()
+            self.G = self.graphGenerator()
             mapping = {
-                n: i for (n, i) in zip(G.nodes(), range(1, len(G.nodes()) + 1))
+                n: i
+                for (n, i) in zip(self.G.nodes(), range(1, len(self.G.nodes()) + 1))
             }
-            nx.relabel_nodes(G, mapping, False)
+            nx.relabel_nodes(self.G, mapping, False)
 
-            if not isinstance(self.earlyAdopters, list):
-                self.earlyAdopters = self.earlyAdopters[0](G, self.earlyAdopters[1])
+            if not isinstance(self.early_adopters, list):
+                self.early_adopters = self.early_adopters[0](
+                    self.G, self.early_adopters[1]
+                )
 
-            self.P = Population(G, self.early_adopters)
-            self.counts = self.P.count_all()
+            self.P = Population(self.G, self.early_adopters)
 
-            self.time_series_data.append(self.counts[State.STATE_A])
+            self.time_series_data[k].append(self.P.counts[State.STATE_A])
+            if len(self.G) < 100:
+                self.draw = True
+            else:
+                self.draw = False
 
-            if self.draw:
+            if self.draw and k == 0:
                 self.animateGraph(False, 0)
 
             for i in range(self.steps):
                 self.P.step_all()
 
-                if self.draw:
+                if self.draw and k == 0:
                     self.animateGraph(False, i + 1)
 
-                for j, v in enumerate(self.P.counts.values()):
-                    self.time_series_data[k][j].append(v)
-            self.P = Population(self.G, self.early_adopters)
+                self.time_series_data[k].append(self.P.counts[State.STATE_A])
         self.draw_time_series()
         return self.stats()
 
@@ -71,37 +71,43 @@ class Experiment:
             node_color=node_color,
         )
         plt.savefig(f"figures/{self.name}/{step}.png")
-        plt.waitforbuttonpress(0.1)
+        # plt.waitforbuttonpress(0.1)
 
     def draw_time_series(self):
-        fig = plt.figure(self.name)
+        plt.clf()
+        plt.figure(self.name)
         data = np.array(self.time_series_data)
         mean_data = data.mean(axis=0)
         Q1 = np.quantile(data, 0.25, axis=0)
         Q3 = np.quantile(data, 0.75, axis=0)
         x = list(range(self.steps + 1))
-        plt.plot(x, mean_data[0], label="Behavior A")
-        plt.fill_between(x, Q1[0], Q3[0], alpha=0.3)
+        plt.plot(x, mean_data, label="Behavior A")
+        plt.fill_between(x, Q1, Q3, alpha=0.3)
+        plt.ylim([0, len(self.G)])
         plt.xlabel("Timestep")
         plt.ylabel("# of individuals")
         plt.legend()
-        plt.title(f"Complex contagion model for {self.name} {len(self.G)} nodes")
+        plt.title(f"Agents adopting behavior A for {self.name}")
         plt.savefig(f"figures/{self.name}/timeseries.png")
+        plt.close()
 
     def stats(self):
         data = np.array(self.time_series_data).mean(axis=0)
-        stats = {}
+        stats = {"name": self.name}
         # Time to no changes
-        min_sus = data[0].min()
-        stats["time_to_no_change"] = np.where(data[0] == min_sus)[0][0]
+        min_sus = data.min()
+        stats["time_to_no_change"] = np.where(data == min_sus)[0][0]
         # Percentage adopting
-        stats["percentage_adopting"] = data[0][-1] / len(self.G)
+        stats["percentage_adopting"] = data[-1] / len(self.G)
         # Clustering coeffiecient
         stats["clustering_coefficient"] = nx.transitivity(self.G)
         # Density
         stats["density"] = nx.density(self.G)
         # Average path length
-        stats["avg_path_len"] = nx.average_shortest_path_length(self.G)
+        if not nx.is_connected(self.G):
+            stats["avg_path_len"] = float("inf")
+        else:
+            stats["avg_path_len"] = nx.average_shortest_path_length(self.G)
         return stats
 
     def plot_degree_histogram(self, G, log_scale=False):
