@@ -1,5 +1,3 @@
-import os
-
 import networkx as nx
 
 from Experiment import Experiment
@@ -125,15 +123,11 @@ if __name__ == "__main__":
         "smallWorldGraph_410": [(get_nHighestDegreeNodes, 20)],
         "dublinGraph": [(get_nHighestDegreeNodes, 50)],
     }
-    steps = 10
     trials = 10
 
     for graphName in Graphs.keys():
         graphGenerator = eval(graphName)
-        # Create folder for figures
-        if not os.path.exists(f"figures/{graphName}"):
-            os.mkdir(f"figures/{graphName}")
-
         for earlyAdopters in Graphs[graphName]:
-            E = Experiment(graphGenerator, steps, trials, graphName, earlyAdopters)
+            # Create folder for figures
+            E = Experiment(graphGenerator, trials, graphName, earlyAdopters)
             E.run()

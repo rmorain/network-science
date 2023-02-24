@@ -1,4 +1,5 @@
 import collections
+import os
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -9,18 +10,18 @@ from State import State
 
 
 class Experiment:
-    def __init__(self, graphGenerator, steps, trials, name, early_adopters):
+    def __init__(self, graphGenerator, trials, name, early_adopters):
         self.graphGenerator = graphGenerator
         self.name = name
         self.early_adopters = early_adopters
 
-        self.steps = steps
         self.trials = trials
         self.time_series_data = [[] for k in range(self.trials)]
 
     def run(self):
         for k in range(self.trials):
             self.G = self.graphGenerator()
+
             mapping = {
                 n: i
                 for (n, i) in zip(self.G.nodes(), range(1, len(self.G.nodes()) + 1))
@@ -43,7 +44,8 @@ class Experiment:
             if self.draw and k == 0:
                 self.animateGraph(False, 0)
 
-            for i in range(self.steps):
+            # One step for each node
+            for i in range(len(self.G)):
                 self.P.step_all()
 
                 if self.draw and k == 0:
@@ -70,7 +72,10 @@ class Experiment:
             node_size=15,
             node_color=node_color,
         )
-        plt.savefig(f"figures/{self.name}/{step}.png")
+        # Create folder for figures
+        if not os.path.exists(f"figures/{self.name}_{self.early_adopters}"):
+            os.mkdir(f"figures/{self.name}_{self.early_adopters}")
+        plt.savefig(f"figures/{self.name}_{self.early_adopters}/{step}.png")
         # plt.waitforbuttonpress(0.1)
 
     def draw_time_series(self):
@@ -80,7 +85,7 @@ class Experiment:
         mean_data = data.mean(axis=0)
         Q1 = np.quantile(data, 0.25, axis=0)
         Q3 = np.quantile(data, 0.75, axis=0)
-        x = list(range(self.steps + 1))
+        x = list(range(len(self.G) + 1))
         plt.plot(x, mean_data, label="Behavior A")
         plt.fill_between(x, Q1, Q3, alpha=0.3)
         plt.ylim([0, len(self.G)])
@@ -88,7 +93,10 @@ class Experiment:
         plt.ylabel("# of individuals")
         plt.legend()
         plt.title(f"Agents adopting behavior A for {self.name}")
-        plt.savefig(f"figures/{self.name}/timeseries.png")
+        # Create folder for figures
+        if not os.path.exists(f"figures/{self.name}_{self.early_adopters}"):
+            os.mkdir(f"figures/{self.name}_{self.early_adopters}")
+        plt.savefig(f"figures/{self.name}_{self.early_adopters}/timeseries.png")
         plt.close()
 
     def stats(self):
