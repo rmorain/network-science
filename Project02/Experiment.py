@@ -33,13 +33,13 @@ class Experiment:
             for i, v in enumerate(self.P.counts.values()):
                 self.time_series_data[k][i].append(v)
 
-            if self.draw:
+            if self.draw and k == 0:
                 self.animateGraph(False, 0)
 
             for i in range(self.steps):
                 self.P.step_all()
 
-                if self.draw:
+                if self.draw and k == 0:
                     self.animateGraph(False, i + 1)
 
                 for j, v in enumerate(self.P.counts.values()):
@@ -66,10 +66,11 @@ class Experiment:
             node_color=node_color,
         )
         plt.savefig(f"figures/{self.name}/{step}.png")
-        plt.waitforbuttonpress(0.1)
+        # plt.waitforbuttonpress(0.1)
 
     def draw_time_series(self):
-        fig = plt.figure(self.name)
+        plt.clf()
+        plt.figure(self.name)
         data = np.array(self.time_series_data)
         mean_data = data.mean(axis=0)
         Q1 = np.quantile(data, 0.25, axis=0)
@@ -80,8 +81,9 @@ class Experiment:
         plt.xlabel("Timestep")
         plt.ylabel("# of individuals")
         plt.legend()
-        plt.title(f"Complex contagion model for {self.name} {len(self.G)} nodes")
+        plt.title(f"Agents adopting behavior A for {self.name}")
         plt.savefig(f"figures/{self.name}/timeseries.png")
+        plt.close()
 
     def stats(self):
         data = np.array(self.time_series_data).mean(axis=0)
@@ -96,7 +98,10 @@ class Experiment:
         # Density
         stats["density"] = nx.density(self.G)
         # Average path length
-        stats["avg_path_len"] = nx.average_shortest_path_length(self.G)
+        if not nx.is_connected(self.G):
+            stats["avg_path_len"] = float("inf")
+        else:
+            stats["avg_path_len"] = nx.average_shortest_path_length(self.G)
         return stats
 
     def plot_degree_histogram(self, G, log_scale=False):

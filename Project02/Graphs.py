@@ -1,3 +1,5 @@
+import os
+
 import networkx as nx
 
 from Experiment import Experiment
@@ -65,64 +67,71 @@ def _get_graph_nineteenfour_from_NCM_book():
     G.add_edges_from([(13, 14), (13, 16), (13, 17), (14, 17), (15, 16), (16, 17)])
     return G
 
-def get_nHighestDegreeNodes(G,n):
-    degrees = list(G.degree(list(G.nodes)))
-    degrees.sort(key = lambda x: x[1], reverse=True)
 
-    return [degrees[i][0] for i in range(n)]
-
-def get_nLowestDegreeNodes(G,n):
+def get_nHighestDegreeNodes(G, n):
     degrees = list(G.degree(list(G.nodes)))
-    degrees.sort(key = lambda x: x[1])
+    degrees.sort(key=lambda x: x[1], reverse=True)
 
     return [degrees[i][0] for i in range(n)]
 
 
+def get_nLowestDegreeNodes(G, n):
+    degrees = list(G.degree(list(G.nodes)))
+    degrees.sort(key=lambda x: x[1])
 
-# Graph from fig 19.4
-NCM_Graph = _get_graph_nineteenfour_from_NCM_book()
+    return [degrees[i][0] for i in range(n)]
 
-# circulant graph with 2 neighbors each side
-circulantGraph_2x = nx.circulant_graph(20, [1, 2])
 
-# circulant graph with 4 neighbors each side
-circulantGraph_4x = nx.circulant_graph(20, [1, 2, 3, 4])
+if __name__ == "__main__":
 
-karateGraph = nx.karate_club_graph()
+    # Graph from fig 19.4
+    NCM_Graph = _get_graph_nineteenfour_from_NCM_book()
 
-BAGraph_100 = nx.barabasi_albert_graph(100, 2)
+    # circulant graph with 2 neighbors each side
+    circulantGraph_2x = nx.circulant_graph(20, [1, 2])
 
-BAGraph_410 = nx.barabasi_albert_graph(410, 2)
+    # circulant graph with 4 neighbors each side
+    circulantGraph_4x = nx.circulant_graph(20, [1, 2, 3, 4])
 
-smallWorldGraph_100 = nx.watts_strogatz_graph(100, 5, 0.3)
+    karateGraph = nx.karate_club_graph()
 
-smallWorldGraph_410 = nx.watts_strogatz_graph(410, 3, 0.3)
+    BAGraph_100 = nx.barabasi_albert_graph(100, 2)
 
-dublinGraph = read_graph_from_file()
+    BAGraph_410 = nx.barabasi_albert_graph(410, 2)
 
-Graphs = {
-    "NCM_Graph" : [[1,2],[7,8],[6,7,12]],
-    "circulantGraph_2x" : [[1,2],[1,10]],
-    "circulantGraph_4x" : [[1,2],[1,2,3,4]],
-    "karateGraph" : [[1,2],[33,34]],
-    "BAGraph_100" : [(get_nLowestDegreeNodes,4),(get_nHighestDegreeNodes,4)],
-    "BAGraph_410" : [(get_nHighestDegreeNodes,20),(get_nHighestDegreeNodes,50)],
-    "smallWorldGraph_100" : [(get_nLowestDegreeNodes,4),(get_nHighestDegreeNodes,4)],
-    "smallWorldGraph_410" : [(get_nHighestDegreeNodes,20)],
-    "dublinGraph" : [(get_nHighestDegreeNodes,50)]
-}
-steps = 100
-trials = 10
+    smallWorldGraph_100 = nx.watts_strogatz_graph(100, 5, 0.3)
 
-for graphName in Graphs.keys():
-    G = eval(graphName)
-    mapping = {
-            n: i for (n, i) in zip(G.nodes(), range(1, len(G.nodes()) + 1))
-        }
-    nx.relabel_nodes(G, mapping, False)
+    smallWorldGraph_410 = nx.watts_strogatz_graph(410, 3, 0.3)
 
-    for earlyAdopters in Graphs[graphName]:
-        if not isinstance(earlyAdopters, list):
-            earlyAdopters = earlyAdopters[0](G, earlyAdopters[1])
-        E = Experiment(G, steps, trials, graphName, earlyAdopters)
-        E.run()
+    dublinGraph = read_graph_from_file()
+
+    Graphs = {
+        "NCM_Graph": [[1, 2], [7, 8], [6, 7, 12]],
+        "circulantGraph_2x": [[1, 2], [1, 10]],
+        "circulantGraph_4x": [[1, 2], [1, 2, 3, 4]],
+        "karateGraph": [[1, 2], [33, 34]],
+        "BAGraph_100": [(get_nLowestDegreeNodes, 4), (get_nHighestDegreeNodes, 4)],
+        "BAGraph_410": [(get_nHighestDegreeNodes, 20), (get_nHighestDegreeNodes, 50)],
+        "smallWorldGraph_100": [
+            (get_nLowestDegreeNodes, 4),
+            (get_nHighestDegreeNodes, 4),
+        ],
+        "smallWorldGraph_410": [(get_nHighestDegreeNodes, 20)],
+        "dublinGraph": [(get_nHighestDegreeNodes, 50)],
+    }
+    steps = 10
+    trials = 10
+
+    for graphName in Graphs.keys():
+        G = eval(graphName)
+        mapping = {n: i for (n, i) in zip(G.nodes(), range(1, len(G.nodes()) + 1))}
+        nx.relabel_nodes(G, mapping, False)
+        # Create folder for figures
+        if not os.path.exists(f"figures/{graphName}"):
+            os.mkdir(f"figures/{graphName}")
+
+        for earlyAdopters in Graphs[graphName]:
+            if not isinstance(earlyAdopters, list):
+                earlyAdopters = earlyAdopters[0](G, earlyAdopters[1])
+            E = Experiment(G, steps, trials, graphName, earlyAdopters)
+            E.run()
