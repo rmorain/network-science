@@ -3,6 +3,7 @@ import collections
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
+import tabulate
 
 from Population import Population
 from State import State
@@ -108,6 +109,8 @@ class Experiment:
             stats["avg_path_len"] = float("inf")
         else:
             stats["avg_path_len"] = nx.average_shortest_path_length(self.G)
+
+        print(tabulate(stats.values(), headers = stats.keys()))
         return stats
 
     def plot_degree_histogram(self, G, log_scale=False):
