@@ -1,6 +1,5 @@
-import os
-
 import networkx as nx
+import pandas as pd
 
 from Experiment import Experiment
 
@@ -68,48 +67,59 @@ def _get_graph_nineteenfour_from_NCM_book():
     return G
 
 
+def get_nHighestDegreeNodes(G, n):
+    degrees = list(G.degree(list(G.nodes)))
+    degrees.sort(key=lambda x: x[1], reverse=True)
+
+    return [degrees[i][0] for i in range(n)]
+
+
+def get_nLowestDegreeNodes(G, n):
+    degrees = list(G.degree(list(G.nodes)))
+    degrees.sort(key=lambda x: x[1])
+    return [degrees[i][0] for i in range(n)]
+
+
+# Graph from fig 19.4
+def NCM_Graph():
+    return _get_graph_nineteenfour_from_NCM_book()
+
+
+# circulant graph with 2 neighbors each side
+def circulantGraph_2x():
+    return nx.circulant_graph(20, [1, 2])
+
+
+# circulant graph with 4 neighbors each side
+def circulantGraph_4x():
+    return nx.circulant_graph(20, [1, 2, 3, 4])
+
+
+def karateGraph():
+    return nx.karate_club_graph()
+
+
+def BAGraph_100():
+    return nx.barabasi_albert_graph(100, 2)
+
+
+def BAGraph_410():
+    return nx.barabasi_albert_graph(410, 2)
+
+
+def smallWorldGraph_100():
+    return nx.watts_strogatz_graph(100, 5, 0.3)
+
+
+def smallWorldGraph_410():
+    return nx.watts_strogatz_graph(410, 3, 0.3)
+
+
+def dublinGraph():
+    return read_graph_from_file()
+
+
 if __name__ == "__main__":
-
-    def get_nHighestDegreeNodes(G, n):
-        degrees = list(G.degree(list(G.nodes)))
-        degrees.sort(key=lambda x: x[1], reverse=True)
-
-        return [degrees[i][0] for i in range(n)]
-
-    def get_nLowestDegreeNodes(G, n):
-        degrees = list(G.degree(list(G.nodes)))
-        degrees.sort(key=lambda x: x[1])
-        return [degrees[i][0] for i in range(n)]
-
-    # Graph from fig 19.4
-    def NCM_Graph():
-        return _get_graph_nineteenfour_from_NCM_book()
-
-    # circulant graph with 2 neighbors each side
-    def circulantGraph_2x():
-        return nx.circulant_graph(20, [1, 2])
-
-    # circulant graph with 4 neighbors each side
-    def circulantGraph_4x():
-        return nx.circulant_graph(20, [1, 2, 3, 4])
-
-    def karateGraph():
-        return nx.karate_club_graph()
-
-    def BAGraph_100():
-        return nx.barabasi_albert_graph(100, 2)
-
-    def BAGraph_410():
-        return nx.barabasi_albert_graph(410, 2)
-
-    def smallWorldGraph_100():
-        return nx.watts_strogatz_graph(100, 5, 0.3)
-
-    def smallWorldGraph_410():
-        return nx.watts_strogatz_graph(410, 3, 0.3)
-
-    def dublinGraph():
-        return read_graph_from_file()
 
     Graphs = {
         "NCM_Graph": [[1, 2], [7, 8], [6, 7, 12]],
@@ -125,15 +135,24 @@ if __name__ == "__main__":
         "smallWorldGraph_410": [(get_nHighestDegreeNodes, 20)],
         "dublinGraph": [(get_nHighestDegreeNodes, 50)],
     }
-    steps = 10
     trials = 10
 
+    stats_df = pd.DataFrame(
+        columns=[
+            "name",
+            "time_to_no_change",
+            "percentage_adopting",
+            "clustering_coefficient",
+            "density",
+            "avg_path_len",
+        ]
+    )
     for graphName in Graphs.keys():
         graphGenerator = eval(graphName)
-        # Create folder for figures
-        if not os.path.exists(f"figures/{graphName}"):
-            os.mkdir(f"figures/{graphName}")
-
-        for earlyAdopters in Graphs[graphName]:
-            E = Experiment(graphGenerator, steps, trials, graphName, earlyAdopters)
-            E.run()
+        for i, earlyAdopters in enumerate(Graphs[graphName]):
+            E = Experiment(graphGenerator, trials, graphName, earlyAdopters, i)
+            stats = E.run()
+            stats_df = pd.concat(
+                [stats_df, pd.DataFrame(stats, index=[stats_df.shape[0]])]
+            )
+    stats_df.to_csv("stats_summary.csv")

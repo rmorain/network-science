@@ -24,6 +24,7 @@ class Population:
         for node in early_adopters:
             # Change agent state
             self.population[node].current_state = State.STATE_A
+            self.population[node].prev_state = State.STATE_A
 
         self.counts = self.count_all()
 
