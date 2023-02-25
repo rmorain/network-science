@@ -4,17 +4,17 @@ import os
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-import tabulate
 
 from Population import Population
 from State import State
 
 
 class Experiment:
-    def __init__(self, graphGenerator, trials, name, early_adopters):
+    def __init__(self, graphGenerator, trials, name, early_adopters, run_id):
         self.graphGenerator = graphGenerator
         self.name = name
         self.early_adopters = early_adopters
+        self.run_id = run_id
 
         self.trials = trials
         self.time_series_data = [[] for k in range(self.trials)]
@@ -74,9 +74,9 @@ class Experiment:
             node_color=node_color,
         )
         # Create folder for figures
-        if not os.path.exists(f"figures/{self.name}_{self.early_adopters}"):
-            os.mkdir(f"figures/{self.name}_{self.early_adopters}")
-        plt.savefig(f"figures/{self.name}_{self.early_adopters}/{step}.png")
+        if not os.path.exists(f"figures/{self.name}_{self.run_id}"):
+            os.mkdir(f"figures/{self.name}_{self.run_id}")
+        plt.savefig(f"figures/{self.name}_{self.run_id}/{step}.png")
         # plt.waitforbuttonpress(0.1)
 
     def draw_time_series(self):
@@ -95,17 +95,17 @@ class Experiment:
         plt.legend()
         plt.title(f"Agents adopting behavior A for {self.name}")
         # Create folder for figures
-        if not os.path.exists(f"figures/{self.name}_{self.early_adopters}"):
-            os.mkdir(f"figures/{self.name}_{self.early_adopters}")
-        plt.savefig(f"figures/{self.name}_{self.early_adopters}/timeseries.png")
+        if not os.path.exists(f"figures/{self.name}_{self.run_id}"):
+            os.mkdir(f"figures/{self.name}_{self.run_id}")
+        plt.savefig(f"figures/{self.name}_{self.run_id}/timeseries.png")
         plt.close()
 
     def stats(self):
         data = np.array(self.time_series_data).mean(axis=0)
         stats = {"name": self.name}
         # Time to no changes
-        min_sus = data.min()
-        stats["time_to_no_change"] = np.where(data == min_sus)[0][0]
+        max_val = data.max()
+        stats["time_to_no_change"] = np.where(data == max_val)[0][0]
         # Percentage adopting
         stats["percentage_adopting"] = data[-1] / len(self.G)
         # Clustering coeffiecient
@@ -118,7 +118,7 @@ class Experiment:
         else:
             stats["avg_path_len"] = nx.average_shortest_path_length(self.G)
 
-        print(tabulate(stats.values(), headers = stats.keys()))
+        # print(tabulate(stats.values(), headers=stats.keys()))
         return stats
 
     def plot_degree_histogram(self, G, log_scale=False):

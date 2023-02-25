@@ -2,7 +2,7 @@ import unittest
 
 import networkx as nx
 from Experiment import Experiment
-from Graphs import _get_graph_nineteenfour_from_NCM_book
+from Graphs import NCM_Graph
 
 
 class TestExperiment(unittest.TestCase):
@@ -23,8 +23,7 @@ class TestExperiment(unittest.TestCase):
         self.assertEqual(result, expected_result)
 
     def test_ncm_graph(self):
-        G = _get_graph_nineteenfour_from_NCM_book()
-        E = Experiment(G, 10, 1, "Test", [7, 8])
+        E = Experiment(NCM_Graph, 1, "Test", [1, 2], 0)
         result = E.run()
         self.assertIsNotNone(result)
 
