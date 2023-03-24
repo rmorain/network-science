@@ -9,20 +9,31 @@ July 2022, March 2023
 Brigham Young University
 """
 
-#from scipy.sparse import csr_matrix
+# from scipy.sparse import csr_matrix
 from GraphManager import *
+
 
 def main():
     myGraphHandler = graphHandler()
     myGraphHandler.showGraph()
     myGraphHandler.showDendrogram()
-    
-    # Partition using the Louvain method and show network. 
+
+    # Partition using the Louvain method and show network.
     partition_list = myGraphHandler.getAgentColors_from_LouvainCommunities()
-    myGraphHandler.showGraph(title = "Louvain partition for the assortative graph",agent_colors=partition_list)
-    
+    myGraphHandler.showGraph(
+        title="Louvain partition for the assortative graph", agent_colors=partition_list
+    )
+
     # Partition using the Girvan Newman method and show network.
-    color_map, communities = myGraphHandler.getAgentColors_from_GirvanNewmanCommunities()
-    myGraphHandler.showGraph(title = "Girvan-Newman partition for the assortative graph",agent_colors=color_map,wait_for_button=True)
-    
+    (
+        color_map,
+        communities,
+    ) = myGraphHandler.getAgentColors_from_GirvanNewmanCommunities()
+    myGraphHandler.showGraph(
+        title="Girvan-Newman partition for the assortative graph",
+        agent_colors=color_map,
+        wait_for_button=True,
+    )
+
+
 main()

@@ -180,7 +180,3 @@ class MixedNetworkFormation:
         self.G.nodes[node_index]['degree'] -= 1
         #print("node ", node_index, " now has remaining degree ", self.G.nodes[node_index]['degree'], "\n\n")
         return
-    
-class CustomMixedNetworkFormation(MixedNetworkFormation):
-    def __init__(self, **kwargs):
-        pass
