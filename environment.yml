@@ -13,4 +13,10 @@ dependencies:
   - openssl
   - pudb
   - jupyterlab
+  - networkx==3.0
+  - matplotlib
+  - black
+  - isort
+  - flake8
+  - numpy
 prefix: /Users/robertmorain/mambaforge
