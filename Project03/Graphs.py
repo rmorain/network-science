@@ -157,7 +157,7 @@ if __name__ == "__main__":
     )
     for graphName in Graphs.keys():
         graphGenerator = eval(graphName)
-        E = Experiment(graphGenerator, trials, graphName, i)
+        E = Experiment(graphGenerator, trials, graphName, 0)
         stats = E.run()
         stats_df = pd.concat([stats_df, pd.DataFrame(stats, index=[stats_df.shape[0]])])
     stats_df.to_csv("stats_summary.csv")
