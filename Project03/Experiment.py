@@ -1,4 +1,5 @@
 import collections
+import math
 import os
 
 import matplotlib.pyplot as plt
@@ -10,37 +11,34 @@ from State import State
 
 
 class Experiment:
-    def __init__(self, graphGenerator, trials, name, run_id):
+    def __init__(
+        self, graphGenerator, get_early_adopters, add_edges, trials, name, run_id
+    ):
         self.graphGenerator = graphGenerator
+        self.get_early_adopters = get_early_adopters
+        self.add_edges = add_edges
         self.name = name
         self.run_id = run_id
 
         self.trials = trials
         self.time_series_data = [[] for k in range(self.trials)]
 
-    # TODO: Make this good
-    def get_early_adopters(self, G):
-        return list(range(1, 10))
-
-    # TODO: Make this good
-    def add_edges(self, G):
-        return G
-
     def run(self):
         num_steps = None
         for k in range(self.trials):
             self.G = self.graphGenerator()
-            self.early_adopters = self.get_early_adopters(self.G)
-            self.G = self.add_edges(self.G)
-            # Take same number of steps for all G
-            if not num_steps:
-                num_steps = len(self.G)
-
             mapping = {
                 n: i
                 for (n, i) in zip(self.G.nodes(), range(1, len(self.G.nodes()) + 1))
             }
-            nx.relabel_nodes(self.G, mapping, False)
+            self.G = nx.relabel_nodes(self.G, mapping, True)
+            self.early_adopters = self.get_early_adopters(
+                self.G, math.floor(len(self.G) * 0.05)
+            )
+            self.G = self.add_edges(self.G, math.floor(len(self.G.edges) * 0.1))
+            # Take same number of steps for all G
+            if not num_steps:
+                num_steps = len(self.G)
 
             if not isinstance(self.early_adopters, list):
                 self.early_adopters = self.early_adopters[0](
@@ -51,7 +49,8 @@ class Experiment:
 
             self.time_series_data[k].append(self.P.counts[State.STATE_A])
             if len(self.G) < 100:
-                self.draw = True
+                # self.draw = True
+                self.draw = False
             else:
                 self.draw = False
 

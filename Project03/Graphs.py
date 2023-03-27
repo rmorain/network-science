@@ -1,4 +1,6 @@
+import matplotlib.pyplot as plt
 import networkx as nx
+import numpy as np
 import pandas as pd
 
 from AssortativeNetworkManager import MixedNetworkFormation
@@ -126,10 +128,30 @@ def assortativeGraph():
     ).getGraph()
 
 
+def add_random_edges(G, n):
+    # Add n random edges to the graph
+    count = 0
+    while count < n:
+        # random edge
+        u, v = np.random.choice(np.arange(1, len(G) + 1), 2)
+        if not G.has_edge(u, v):
+            G.add_edge(u, v)
+            count += 1
+    return G
+
+
+def random_early_adopters(G, n):
+    return np.random.choice(np.arange(1, len(G) + 1), n).tolist()
+
+
 if __name__ == "__main__":
 
     Graphs = {
-        "assortativeGraph": [list(range(1, 51))]
+        "assortativeGraph": [
+            "random_early_adopters",
+            "get_nHighestDegreeNodes",
+            "get_nLowestDegreeNodes",
+        ]
         # "NCM_Graph": [[1, 2], [7, 8], [6, 7, 12]],
         # "circulantGraph_2x": [[1, 2], [1, 10]],
         # "circulantGraph_4x": [[1, 2], [1, 2, 3, 4]],
@@ -157,7 +179,22 @@ if __name__ == "__main__":
     )
     for graphName in Graphs.keys():
         graphGenerator = eval(graphName)
-        E = Experiment(graphGenerator, trials, graphName, 0)
-        stats = E.run()
-        stats_df = pd.concat([stats_df, pd.DataFrame(stats, index=[stats_df.shape[0]])])
-    stats_df.to_csv("stats_summary.csv")
+        for i, earlyAdopters in enumerate(Graphs[graphName]):
+            E = Experiment(
+                graphGenerator,
+                eval(earlyAdopters),
+                add_random_edges,
+                trials,
+                graphName + "_" + earlyAdopters,
+                i,
+            )
+            stats = E.run()
+            stats_df = pd.concat(
+                [stats_df, pd.DataFrame(stats, index=[stats_df.shape[0]])]
+            )
+        stats_df.to_csv("stats_summary.csv")
+        plt.bar(Graphs[graphName], stats_df["percentage_adopting"].tolist())
+        plt.title("Percentage Adopting vs. Early Adopters Method")
+        plt.ylabel("Percentage Adopting")
+        plt.savefig("barplot.png")
+        plt.show()

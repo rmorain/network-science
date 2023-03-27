@@ -15,11 +15,7 @@ class Population:
             neighbors = agent.neighbors
             for j in range(len(neighbors)):
                 a = neighbors[j]
-                if type(a) is int:
-                    neighbors[j] = self.population[neighbors[j]]
-                else:
-                    # Lattice neighbors
-                    neighbors[j] = self.population[10 * a[0] + a[1]]
+                neighbors[j] = self.population[a]
 
         for node in early_adopters:
             # Change agent state
