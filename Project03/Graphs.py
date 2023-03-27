@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import pandas as pd
+from networkx.algorithms.community.centrality import girvan_newman
 
 from AssortativeNetworkManager import MixedNetworkFormation
 from Experiment import Experiment
@@ -144,6 +145,38 @@ def random_early_adopters(G, n):
     return np.random.choice(np.arange(1, len(G) + 1), n).tolist()
 
 
+def eig_centrality_early_adopters(G, n):
+    nodes = nx.eigenvector_centrality(G, max_iter=500, tol=1e-2)
+    nodes_list = list(nodes.items())
+    sorted_nodes_list = sorted(nodes_list, key=lambda x: x[1], reverse=True)
+    early_adopters = [x[0] for x in sorted_nodes_list][:n]
+    return early_adopters
+
+
+def add_edges_betweenness(G, n):
+    # Add n edges to the graph based on girvan newman betweenness
+    betweenness = {}
+    # Generate potential edges
+    potential_edges = np.random.choice(np.arange(1, len(G) + 1), (100, 2))
+    for edge in potential_edges:
+        u, v = edge
+        # u must be <= v
+        if u > v:
+            temp = u
+            u = v
+            v = temp
+
+        if not G.has_edge(u, v):
+            G.add_edge(u, v)
+            betweenness[(u, v)] = nx.edge_betweenness_centrality(G)[(u, v)]
+            G.remove_edge(u, v)
+    betweenness_list = list(betweenness.items())
+    sorted_betweenness_list = sorted(betweenness_list, key=lambda x: x[1], reverse=True)
+    edges_to_add = [x[0] for x in sorted_betweenness_list][:n]
+    G.add_edges_from(edges_to_add)
+    return G
+
+
 if __name__ == "__main__":
 
     Graphs = {
@@ -151,6 +184,7 @@ if __name__ == "__main__":
             "random_early_adopters",
             "get_nHighestDegreeNodes",
             "get_nLowestDegreeNodes",
+            "eig_centrality_early_adopters",
         ]
         # "NCM_Graph": [[1, 2], [7, 8], [6, 7, 12]],
         # "circulantGraph_2x": [[1, 2], [1, 10]],
@@ -177,24 +211,30 @@ if __name__ == "__main__":
             "avg_path_len",
         ]
     )
-    for graphName in Graphs.keys():
-        graphGenerator = eval(graphName)
-        for i, earlyAdopters in enumerate(Graphs[graphName]):
+    graphName = "assortativeGraph"
+    graphGenerator = eval(graphName)
+    edge_methods = ["add_random_edges", "add_edges_betweenness"]
+
+    for i, earlyAdopters in enumerate(Graphs[graphName]):
+        for j, edge_method in enumerate(edge_methods):
             E = Experiment(
                 graphGenerator,
                 eval(earlyAdopters),
-                add_random_edges,
+                eval(edge_method),
                 trials,
-                graphName + "_" + earlyAdopters,
+                graphName + "_" + earlyAdopters + "_" + edge_method,
                 i,
             )
             stats = E.run()
             stats_df = pd.concat(
                 [stats_df, pd.DataFrame(stats, index=[stats_df.shape[0]])]
             )
-        stats_df.to_csv("stats_summary.csv")
-        plt.bar(Graphs[graphName], stats_df["percentage_adopting"].tolist())
-        plt.title("Percentage Adopting vs. Early Adopters Method")
-        plt.ylabel("Percentage Adopting")
-        plt.savefig("barplot.png")
-        plt.show()
+    stats_df.to_csv("stats_summary.csv")
+    __import__("pudb").set_trace()
+    stats_df.plot(x="name", y=[], kind="bar")
+
+    # plt.bar(Graphs[graphName], stats_df["percentage_adopting"].tolist())
+    # plt.title("Percentage Adopting vs. Early Adopters Method")
+    # plt.ylabel("Percentage Adopting")
+    # plt.savefig("barplot.png")
+    # plt.show()
