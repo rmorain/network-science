@@ -230,11 +230,17 @@ if __name__ == "__main__":
                 [stats_df, pd.DataFrame(stats, index=[stats_df.shape[0]])]
             )
     stats_df.to_csv("stats_summary.csv")
-    __import__("pudb").set_trace()
-    stats_df.plot(x="name", y=[], kind="bar")
 
-    # plt.bar(Graphs[graphName], stats_df["percentage_adopting"].tolist())
-    # plt.title("Percentage Adopting vs. Early Adopters Method")
-    # plt.ylabel("Percentage Adopting")
-    # plt.savefig("barplot.png")
-    # plt.show()
+    y = stats_df["percentage_adopting"].tolist()
+    y1 = y[: len(y) // 2]
+    y2 = y[len(y) // 2 :]
+    X = Graphs[graphName]
+    X_axis = np.arange(len(X))
+    plt.bar(X_axis - 0.2, y1, 0.4, label="Adding random edges")
+    plt.bar(X_axis + 0.2, y2, 0.4, label="Adding edges with high betweenness")
+    plt.xticks(X_axis, X)
+    plt.title("Percentage Adopting vs. Early Adopters Method")
+    plt.ylabel("Percentage Adopting")
+    plt.legend()
+    plt.savefig("barplot.png")
+    plt.show()
