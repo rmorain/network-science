@@ -23,9 +23,10 @@ class MixedNetworkFormation:
         self.cyan = 2
         self.green = 3
         self.color_template = color_template
-        self.typeList = [self.blue, self.magenta, self.cyan, self.green]
+        # self.typeList = [self.blue, self.magenta, self.cyan, self.green]
         num_types = 4
-        self.typeList = self.typeList[:num_types]
+        # self.typeList = self.typeList[:num_types]
+        self.typeList = list(range(num_types))
         assert len(self.typeList) == num_types
         # more weakly assortative
         self.Eij = np.array(
@@ -45,6 +46,17 @@ class MixedNetworkFormation:
                 [0.03, 0.02, 0.01, 0.4],
             ]
         )  # Mixing matrix
+        # six types
+        # self.Eij = np.array(
+        # [
+        # [0.4, 0.02, 0.01, 0.03, 0.01, 0.03],
+        # [0.02, 0.4, 0.03, 0.02, 0.02, 0.02],
+        # [0.01, 0.03, 0.4, 0.01, 0.01, 0.03],
+        # [0.03, 0.02, 0.01, 0.4, 0.03, 0.01],
+        # [0.01, 0.01, 0.01, 0.03, 0.4, 0.02],
+        # [0.03, 0.02, 0.03, 0.01, 0.02, 0.4],
+        # ]
+        # )  # Mixing matrix
         self.G = nx.Graph()
 
         # Run the algorithm
