@@ -1,7 +1,10 @@
+import os
+
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import pandas as pd
+from matplotlib.lines import Line2D
 from networkx.algorithms.community.centrality import girvan_newman
 
 from AssortativeNetworkManager import MixedNetworkFormation
@@ -211,36 +214,91 @@ if __name__ == "__main__":
             "avg_path_len",
         ]
     )
+    num_edges = 200
+    poisson_lambda = 5
+    num_node_types = 4
     graphName = "assortativeGraph"
+    run_config = f"({num_edges}, {poisson_lambda}, {num_node_types})"
     graphGenerator = eval(graphName)
     edge_methods = ["add_random_edges", "add_edges_betweenness"]
+    all_time_series = []
+    if not os.path.exists(f"results/{graphName}_{run_config}"):
+        os.mkdir(f"results/{graphName}_{run_config}")
 
     for i, earlyAdopters in enumerate(Graphs[graphName]):
         for j, edge_method in enumerate(edge_methods):
+            label = earlyAdopters
             E = Experiment(
                 graphGenerator,
                 eval(earlyAdopters),
                 eval(edge_method),
                 trials,
-                graphName + "_" + earlyAdopters + "_" + edge_method,
+                label,
                 i,
             )
-            stats = E.run()
+            stats, time_series_data = E.run()
+            all_time_series.append((time_series_data, label))
             stats_df = pd.concat(
                 [stats_df, pd.DataFrame(stats, index=[stats_df.shape[0]])]
             )
-    stats_df.to_csv("stats_summary.csv")
+    stats_df.to_csv(f"results/{graphName}_{run_config}/stats_summary_{run_config}.csv")
 
+    # Create bar chart
     y = stats_df["percentage_adopting"].tolist()
-    y1 = y[: len(y) // 2]
-    y2 = y[len(y) // 2 :]
+    y1 = []
+    y2 = []
+    for i in range(len(y)):
+        if i % 2 == 0:
+            y1.append(y[i])
+        else:
+            y2.append(y[i])
+
     X = Graphs[graphName]
     X_axis = np.arange(len(X))
     plt.bar(X_axis - 0.2, y1, 0.4, label="Adding random edges")
     plt.bar(X_axis + 0.2, y2, 0.4, label="Adding edges with high betweenness")
     plt.xticks(X_axis, X)
-    plt.title("Percentage Adopting vs. Early Adopters Method")
+    plt.title(f"Percentage Adopting vs. Early Adopters Method with {run_config}")
     plt.ylabel("Percentage Adopting")
     plt.legend()
-    plt.savefig("barplot.png")
-    plt.show()
+    figure = plt.gcf()
+    figure.set_size_inches(15, 10)
+
+    plt.savefig(f"results/{graphName}_{run_config}/barplot_{run_config}.png")
+    plt.close()
+    # plt.show()
+
+    fig, ax = plt.subplots()
+    colors = ["r", "r", "g", "g", "c", "c", "m", "m"]
+    for i, val in enumerate(all_time_series):
+        time_series_data, label = val
+        data = np.array(time_series_data)
+        mean_data = data.mean(axis=0)
+        Q1 = np.quantile(data, 0.25, axis=0)
+        Q3 = np.quantile(data, 0.75, axis=0)
+        x = list(range(len(mean_data)))
+        if i % 2 == 0:
+            linestyle = "--"
+        else:
+            linestyle = "-"
+        plt.plot(x, mean_data, label=label, linestyle=linestyle, color=colors[i])
+        plt.fill_between(x, Q1, Q3, alpha=0.3, color=colors[i])
+    plt.xlabel("Timestep")
+    plt.ylabel("# of individuals")
+    plt.title(f"{graphName} with {run_config}")
+    labels = Graphs[graphName] + edge_methods
+    custom_lines = [
+        Line2D([0], [0], color="r"),
+        Line2D([0], [0], color="g"),
+        Line2D([0], [0], color="c"),
+        Line2D([0], [0], color="m"),
+        Line2D([0], [0], color="k", linestyle="--"),
+        Line2D([0], [0], color="k", linestyle="-"),
+    ]
+    ax.legend(custom_lines, labels)
+    # Create folder for figures
+    fig.set_size_inches(10, 10)
+    plt.savefig(
+        f"results/{graphName}_{run_config}/timeseries_{run_config}.png", dpi=100
+    )
+    plt.close()

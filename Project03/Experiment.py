@@ -66,7 +66,7 @@ class Experiment:
 
                 self.time_series_data[k].append(self.P.counts[State.STATE_A])
         self.draw_time_series(num_steps)
-        return self.stats()
+        return self.stats(), self.time_series_data
 
     def animateGraph(self, draw_only_nodes, step):
         plt.clf()
